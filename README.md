@@ -8,8 +8,9 @@ A Flask API and an Angular form that serve a Random Forest which predicts whethe
 California", *Science Advances* 12, eaed4197 (2026), trained on CAL FIRE DINS inspection records
 (100,228 buildings, 2013-2024).
 
-- Repository: https://github.com/YOUR_USERNAME/YOUR_REPO
-- Static demo (GitHub Pages): https://YOUR_USERNAME.github.io/YOUR_REPO/
+- Repository: https://talalvirk/California-Wildfire-Damage-Prediction/
+
+- Static demo (GitHub Pages): https://talalvirk.github.io/California-Wildfire-Damage-Prediction/
 
 > **Disclaimer.** This is an educational reproduction, not an operational wildfire or insurance
 > risk tool. Do not use its output for real decisions.
