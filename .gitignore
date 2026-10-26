@@ -1,0 +1,27 @@
+# Python and local environments
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.env
+.env.*
+!.env.example
+
+# Angular dependencies and build outputs
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+
+# Full public training dataset (37 MB, available from the paper's data sources).
+# The small non-sensitive data/sample_inputs.csv IS committed.
+data/CalDins_*.csv
+
+# NOTE: backend/models/ is intentionally NOT ignored. The 38 MB model bundle is
+# under GitHub's 100 MB limit and the CI tests need it.
+
+# Local logs
+*.log

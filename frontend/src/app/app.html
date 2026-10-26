@@ -1,0 +1,82 @@
+<main class="page">
+  <header class="hero">
+    <h1>Wildfire Building Damage Predictor</h1>
+    <p>
+      Enter the surroundings and weather around a building to estimate whether it would be
+      damaged in a California wildfire. Model: Random Forest (comprehensive model, 21 inputs),
+      based on Bar et al., <em>Science Advances</em> 2026.
+    </p>
+    <p class="note">
+      Research reproduction for a DevOps lab. This is not an operational risk assessment.
+    </p>
+  </header>
+
+  @if (staticMode) {
+    <div class="alert static-box" role="status">
+      <strong>Static demo.</strong> This public page is hosted on GitHub Pages, which cannot run
+      the Flask API or the model, so the Predict button is disabled. To get live predictions, run
+      the project locally (see the README).
+    </div>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    @for (group of groups; track group) {
+      <section class="card">
+        <h2>{{ group }}</h2>
+        <div class="grid">
+          @for (f of featuresIn(group); track f.name) {
+            <div class="field" [class.has-error]="invalid(f.name)">
+              <label [for]="f.name">
+                {{ f.label }}
+                <span class="unit">({{ f.unit }})</span>
+                @if (!f.required) { <span class="optional">optional</span> }
+              </label>
+              <input
+                [id]="f.name"
+                type="number"
+                step="any"
+                [formControlName]="f.name"
+                [placeholder]="'e.g. ' + f.typical"
+              />
+              <small class="help">{{ f.help }}</small>
+              @if (invalid(f.name)) {
+                <small class="error">{{ fieldError(f) }}</small>
+              }
+            </div>
+          }
+        </div>
+      </section>
+    }
+
+    <div class="actions">
+      <button type="submit" class="primary" [disabled]="loading() || staticMode">
+        {{ staticMode ? 'Prediction disabled (static demo)' : loading() ? 'Predicting…' : 'Predict damage' }}
+      </button>
+      <button type="button" (click)="loadSample()">Load sample record</button>
+      <button type="button" (click)="reset()">Reset</button>
+    </div>
+  </form>
+
+  @if (errorMessage(); as msg) {
+    <div class="alert error-box" role="alert">{{ msg }}</div>
+  }
+
+  @if (result(); as r) {
+    <section class="card result" [class.damage]="r.prediction === 1">
+      <h2>Result: {{ r.label }}</h2>
+      <div class="bar" aria-hidden="true">
+        <div class="fill" [style.width.%]="r.probability_damage * 100"></div>
+      </div>
+      <p>
+        Probability of damage: <strong>{{ percent(r.probability_damage) }}</strong>
+        &nbsp;|&nbsp; no damage: <strong>{{ percent(r.probability_no_damage) }}</strong>
+      </p>
+      @if (r.warnings.length) {
+        <ul class="warnings">
+          @for (w of r.warnings; track w) { <li>{{ w }}</li> }
+        </ul>
+      }
+      <small>Model version: {{ r.model_version }}</small>
+    </section>
+  }
+</main>
