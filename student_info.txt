@@ -1,0 +1,8 @@
+Name:     Muhammad Talal Virk
+Roll No:  232042
+Section:  BSSE 7 B
+
+Course:   DevOps Lab 
+Lab:      Lab 6 - ML Full-Stack CI/CD
+Project:  Wildfire Building Damage Predictor
+GitHub:   https://github.com/talalvirk/YOUR_REPO

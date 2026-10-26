@@ -1,0 +1,104 @@
+NOVELTY STATEMENT - PLANNED ADDITIONAL WORK BEYOND THE BASE PAPER
+=================================================================
+Base paper: "Explaining building damage from wildfires in California",
+            Bar, Li, Banerjee. Science Advances 12, eaed4197 (2026).
+Student:    see student_info.txt
+
+1. WHAT THE BASE PAPER ALREADY DOES 
+----------------------------------------------------------
+Random Forest on 100,228 CAL FIRE DINS records, three feature sets (comprehensive,
+enviro-weather, environmental exposure), SHAP and causal-forest analysis, a
+200 m spatial dead-zone cross-validation (88 % accuracy for the comprehensive
+model), three held-out fires (76-82 %), leave-one-grid-out 1-degree blocks
+(68 %), and a 100 m risk map.
+
+2. GAPS FOUND IN THE BASE PAPER AND ITS DATA
+--------------------------------------------
+G1. The headline 88 % comes from a 200 m exclusion zone only. Buildings a few
+    kilometres away, in the same fire, can still sit in both train and test.
+    The paper's other tests (3 fires, 1-degree blocks) give much lower scores,
+    but no single analysis shows how accuracy falls as test data gets farther
+    from the training data.
+G2. In the supplied dataset, 78.9 % of rows (79,062 of 100,228) have the fire
+    name "No Fire Name Found", so fire-level validation is impossible for most
+    records.
+G3. Damage01 = 1 also contains 436 buildings labelled "Inaccessible" (not
+    inspected). About 91 % of the remaining damage class is "Destroyed (>50%)";
+    affected, minor and major together are only about 5,000 rows.
+G4. Aspect and wind direction (0-360 degrees) and the vegetation-type code (EVT)
+    are used as ordinary numbers, although they are circular / categorical.
+G5. Weather variables (tdmean, Tmax, VPD, Srad) are strongly correlated
+    (r >= 0.70 in the paper), so per-variable importance splits credit between
+    them.
+G6. The risk map is read as a probability, but calibration and prediction
+    uncertainty under spatial shift are not evaluated.
+
+3. PLANNED CONTRIBUTIONS (novelty of this work)
+-----------------------------------------------
+C1. Multi-scale spatial generalisation audit  (answers G1, G2)
+    Re-evaluate the same models with increasing separation: random split,
+    200 m dead zone, 1 km / 5 km / 25 km buffers, spatial blocks of 0.25 and
+    1 degree, and leave-one-named-fire-out. Fire events missing from the data
+    are reconstructed by clustering building coordinates. Output: an accuracy-
+    versus-distance curve and a recommended reporting standard.
+    Pilot result (60-tree forest, 5 folds, no SMOTE): random split 0.928
+    accuracy / 0.980 AUC, but 0.25-degree spatial blocks only 0.808 accuracy /
+    0.873 AUC (SD across folds 0.089).
+
+C2. Label and data-quality audit  (answers G3)
+    Remove or separately model the "Inaccessible" records, and report results
+    both for "any damage" and for "destroyed versus no damage".
+    Pilot result: dropping the 436 Inaccessible rows gave 0.823 accuracy /
+    0.881 AUC versus 0.808 / 0.873 (indicative only: test sets differ slightly).
+
+C3. Better feature representation  (answers G4)
+    Encode aspect and wind direction as sine/cosine, flag flat terrain
+    (aspect = -1), and treat EVT as a categorical variable.
+    Pilot result: sine/cosine gave only +0.005 accuracy, within fold-to-fold
+    variation, so this will be reported as an ablation, not a main claim.
+
+C4. Model comparison and uncertainty under spatial shift  (answers G6)
+    Compare the Random Forest with gradient-boosted trees, then measure
+    calibration (Brier score, expected calibration error, reliability curves)
+    and conformal prediction sets, checking whether the promised coverage holds
+    on spatially unseen areas.
+    Pilot result: the forest's probabilities are fairly well calibrated overall
+    (expected calibration error 0.043 under spatial blocks), so the main
+    question is coverage under spatial shift, not recalibration.
+
+C5. Group-level explanation robust to correlation  (answers G5)
+    Report grouped permutation importance and grouped SHAP for five groups
+    (topography, ecosystem, human footprint, building, weather).
+    Pilot result: removing the building-flammability rating (CBFR) lowers
+    spatial-block accuracy from 0.808 to 0.750 and AUC from 0.873 to 0.791.
+
+C6. Reproducible, tested, deployed software  (completed in this repository)
+    Saved model bundle, validated Flask API, Angular form, automated tests, and
+    CI/CD with GitHub Pages, so every reported number can be regenerated.
+
+4. PRIORITY 
+--------------------------------
+Must do:   C1, C2 (strongest evidence of originality; both use the existing data).
+Should do: C3, C5.
+If time:   C4.
+Done:      C6.
+
+5. EVALUATION PLAN
+------------------
+Metrics: accuracy, precision, recall, F1, ROC-AUC, Brier score, calibration
+error. Report mean and standard deviation across spatial folds, and compare
+variants with paired tests across the same folds. Same 21 comprehensive-model
+features for all comparisons, with Model 01 (no CBFR) and Model 02 (static
+only) as references.
+
+6. LIMITS AND HONEST CLAIMS
+---------------------------
+- Pilot numbers above are indicative only: smaller forest, 5 folds, no SMOTE,
+  no tuning. Final numbers will use the full protocol.
+- The dataset has no date column, so true temporal validation (train on early
+  years, test on later years) is left as future work.
+- The CBFR rating was calibrated by the paper's authors using damage outcomes
+  (30 % sample). Its exact calibration subset is not in the data, so possible
+  leakage cannot be fully ruled out and will be stated as a limitation.
+- This work does not re-implement the paper's causal forest or its CBFR
+  derivation.
